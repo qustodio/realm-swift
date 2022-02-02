@@ -200,7 +200,7 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
     }
 
     // FIXME: Using `assertThrows` within a Server test will crash on tear down
-    func testSameNamedSubscriptionThrows() throws {
+    func skip_testSameNamedSubscriptionThrows() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
         subscriptions.write {
@@ -215,7 +215,7 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
     }
 
     // FIXME: Using `assertThrows` within a Server test will crash on tear down
-    func testAddSubscriptionOutsideWriteThrows() throws {
+    func skip_testAddSubscriptionOutsideWriteThrows() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
         assertThrows(subscriptions.append(QuerySubscription<SwiftPerson>(name: "person_age_1") {
@@ -546,7 +546,7 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
     }
 
     // FIXME: Using `assertThrows` within a Server test will crash on tear down
-    func testFlexibleSyncAppUpdateQueryWithDifferentObjectTypeWillThrow() throws {
+    func skip_testFlexibleSyncAppUpdateQueryWithDifferentObjectTypeWillThrow() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
         subscriptions.write {
