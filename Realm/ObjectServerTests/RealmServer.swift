@@ -113,12 +113,15 @@ private extension Property {
 }
 
 private extension ObjectSchema {
-    func stitchRule(_ partitionKeyType: String, _ schema: Schema, id: String? = nil) -> [String: Any] {
-        var stitchProperties: [String: Any] = [
-            "realm_id": [
+    func stitchRule(_ partitionKeyType: String?, _ schema: Schema, id: String? = nil) -> [String: Any] {
+        var stitchProperties: [String: Any] = [:]
+
+        if let partitionKeyType = partitionKeyType {
+            stitchProperties["realm_id"] = [
                 "bsonType": "\(partitionKeyType)"
             ]
-        ]
+        }
+
         var relationships: [String: Any] = [:]
         for property in properties {
             // First pass we only add the properties to the schema as we can't add
@@ -716,79 +719,33 @@ public class RealmServer: NSObject {
         // rules and then add properties to them so that we can add relationships
         let schema = ObjectiveCSupport.convert(object: RLMSchema.shared())
 
-        let appService: Any
-        switch syncMode {
-        case .pbs(let bsonType):
-            appService = [
-                "name": "mongodb1",
-                "type": "mongodb",
-                "config": [
-                    "uri": "mongodb://localhost:26000",
-                    "sync": [
-                        "state": "enabled",
-                        "database_name": "test_data",
-                        "partition": [
-                            "key": "realm_id",
-                            "type": "\(bsonType)",
-                            "required": false,
-                            "permissions": [
-                                "read": true,
-                                "write": true
-                            ]
-                        ]
-                    ]
-                ]
-                ]
-        case .flx(let fields):
-            appService = [
-                "name": "mongodb1",
-                "type": "mongodb",
-                "config": [
-                    "uri": "mongodb://localhost:26000",
-                    "flexible_sync": [
-                        "state": "enabled",
-                        "database_name": "test_data",
-                        "queryable_fields_names": fields,
-                        "permissions": [
-                            "rules": [:],
-                            "defaultRoles": [[
-                                "name": "all",
-                                "applyWhen": [:],
-                                "read": true,
-                                "write": true
-                            ]]
-                        ]
-                    ]
-                ]
+        // Create the service with an initial basic configuration
+        let appService = [
+            "name": "mongodb1",
+            "type": "mongodb",
+            "config": [
+                "uri": "mongodb://localhost:26000",
             ]
-        }
-
+        ] as [String : Any]
         let serviceResponse = app.services.post(appService)
         guard let serviceId = (try serviceResponse.get() as? [String: Any])?["_id"] as? String else {
             throw URLError(.badServerResponse)
         }
 
-        let rules = app.services[serviceId].rules
-
-        let syncTypes: [ObjectSchema]
-        let partitionKeyType: String?
-        if case .pbs(let bsonType) = syncMode {
-            syncTypes = schema.objectSchema.filter {
-                guard let pk = $0.primaryKeyProperty else { return false }
-                return pk.name == "_id"
-            }
-            partitionKeyType = bsonType
-        } else {
-            // This is a temporary workaround for not been able to add the complete schema for a flx App
-            syncTypes = schema.objectSchema.filter {
-                let validSyncClasses = ["Dog", "Person", "SwiftPerson", "SwiftTypesSyncObject"]
-                return validSyncClasses.contains($0.className)
-            }
-            partitionKeyType = nil
+        let syncTypes =  schema.objectSchema.filter {
+            guard let pk = $0.primaryKeyProperty else { return false }
+            return pk.name == "_id"
         }
+        var partitionKeyType: String? = nil
+        if case .pbs(let bsonType) = syncMode {
+            partitionKeyType = bsonType
+        }
+
+        // Add the schema to the app
+        let rules = app.services[serviceId].rules
         var ruleCreations = [Result<Any?, Error>]()
         for objectSchema in syncTypes {
-            ruleCreations.append(rules.post(objectSchema.stitchRule(partitionKeyType ?? "string", schema)))
+            ruleCreations.append(rules.post(objectSchema.stitchRule(partitionKeyType, schema)))
         }
 
         var ruleIds: [String: String] = [:]
@@ -801,8 +758,50 @@ public class RealmServer: NSObject {
         }
         for objectSchema in syncTypes {
             let id = ruleIds[objectSchema.className]!
-            rules[id].put(on: group, data: objectSchema.stitchRule(partitionKeyType ?? "string", schema, id: id), failOnError)
+            rules[id].put(on: group, data: objectSchema.stitchRule(partitionKeyType, schema, id: id), failOnError)
         }
+
+        let appServiceConfig: Any
+        switch syncMode {
+        case .pbs(let bsonType):
+            appServiceConfig = [
+                "uri": "mongodb://localhost:26000",
+                "sync": [
+                    "state": "enabled",
+                    "database_name": "test_data",
+                    "partition": [
+                        "key": "realm_id",
+                        "type": "\(bsonType)",
+                        "required": false,
+                        "permissions": [
+                            "read": true,
+                            "write": true
+                        ]
+                    ]
+                ]
+            ]
+        case .flx(let fields):
+            appServiceConfig = [
+                "uri": "mongodb://localhost:26000",
+                "flexible_sync": [
+                    "state": "enabled",
+                    "database_name": "test_data",
+                    "queryable_fields_names": fields,
+                    "permissions": [
+                        "rules": [:],
+                        "defaultRoles": [[
+                            "name": "all",
+                            "applyWhen": [:],
+                            "read": true,
+                            "write": true
+                        ]]
+                    ]
+                ]
+            ]
+        }
+
+        // Update the service configuration depending if flx or pbs.
+        app.services[serviceId].config.patch(on: group, appServiceConfig, failOnError)
 
         app.sync.config.put(on: group, data: [
             "development_mode_enabled": true
