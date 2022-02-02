@@ -1081,9 +1081,10 @@ class CombineFlexibleSyncServerTests: SwiftSyncTestCase {
                 $0.age > 10 && $0.firstName == "\(#function)"
             })
         }
-        .sink(receiveCompletion: { _ in }) { _ in
+        .sink(receiveCompletion: { _ in },
+              receiveValue: { _ in
             ex.fulfill()
-        }.store(in: &cancellables)
+        }).store(in: &cancellables)
 
         waitForExpectations(timeout: 20.0, handler: nil)
 
@@ -1118,7 +1119,7 @@ class CombineFlexibleSyncServerTests: SwiftSyncTestCase {
                 }
                 ex.fulfill()
             }
-        }) { _ in }
+        }, receiveValue: { _ in })
         .store(in: &cancellables)
 
         waitForExpectations(timeout: 20.0, handler: nil)
