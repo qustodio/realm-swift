@@ -293,7 +293,7 @@ class Admin {
                     result = $0
                     group.leave()
                 }
-                guard case .success = group.wait(timeout: .now() + 5) else {
+                guard case .success = group.wait(timeout: .now() + 10) else {
                     return .failure(URLError(.badServerResponse))
                 }
                 return result
@@ -720,13 +720,13 @@ public class RealmServer: NSObject {
         let schema = ObjectiveCSupport.convert(object: RLMSchema.shared())
 
         // Create the service with an initial basic configuration
-        let appService = [
+        let appService: Any = [
             "name": "mongodb1",
             "type": "mongodb",
             "config": [
                 "uri": "mongodb://localhost:26000",
             ]
-        ] as [String : Any]
+        ]
         let serviceResponse = app.services.post(appService)
         guard let serviceId = (try serviceResponse.get() as? [String: Any])?["_id"] as? String else {
             throw URLError(.badServerResponse)
@@ -736,7 +736,7 @@ public class RealmServer: NSObject {
             guard let pk = $0.primaryKeyProperty else { return false }
             return pk.name == "_id"
         }
-        var partitionKeyType: String? = nil
+        var partitionKeyType: String?
         if case .pbs(let bsonType) = syncMode {
             partitionKeyType = bsonType
         }
