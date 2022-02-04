@@ -597,6 +597,21 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
 
 // MARK: - Completion Block
 class SwiftFlexibleSyncServerTests: SwiftSyncTestCase {
+    private var cancellables: Set<AnyCancellable> = []
+
+    override class var defaultTestSuite: XCTestSuite {
+        if hasCombine() {
+            return super.defaultTestSuite
+        }
+        return XCTestSuite(name: "\(type(of: self))")
+    }
+
+    override func tearDown() {
+        cancellables.forEach { $0.cancel() }
+        cancellables = []
+        super.tearDown()
+    }
+
     func testFlexibleSyncAppWithoutQuery() throws {
         try populateFlexibleSyncData { realm in
             for i in 1...21 {
@@ -945,7 +960,7 @@ class SwiftFlexibleSyncServerTests: SwiftSyncTestCase {
 // MARK: - Async Await
 #if swift(>=5.5.2) && canImport(_Concurrency)
 @available(macOS 12.0.0, *)
-class AsyncAwaitFlexibleSyncServerTests: SwiftSyncTestCase {
+extension SwiftFlexibleSyncServerTests {
     @MainActor private func populateFlexibleSyncData(_ block: @escaping (Realm) -> Void) async throws {
         var config = (try await self.flexibleSyncApp.login(credentials: .anonymous)).flexibleSyncConfiguration()
         if config.objectTypes == nil {
@@ -1035,28 +1050,12 @@ class AsyncAwaitFlexibleSyncServerTests: SwiftSyncTestCase {
         }
     }
 }
-
 #endif // canImport(_Concurrency)
 
 // MARK: - Combine
 #if !(os(iOS) && (arch(i386) || arch(arm)))
 @available(macOS 10.15, *)
-class CombineFlexibleSyncServerTests: SwiftSyncTestCase {
-    private var cancellables: Set<AnyCancellable> = []
-
-    override class var defaultTestSuite: XCTestSuite {
-        if hasCombine() {
-            return super.defaultTestSuite
-        }
-        return XCTestSuite(name: "\(type(of: self))")
-    }
-
-    override func tearDown() {
-        cancellables.forEach { $0.cancel() }
-        cancellables = []
-        super.tearDown()
-    }
-
+extension SwiftFlexibleSyncServerTests {
     func testFlexibleSyncCombineWrite() throws {
         try populateFlexibleSyncData { realm in
             for i in 1...21 {
