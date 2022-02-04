@@ -961,31 +961,9 @@ class SwiftFlexibleSyncServerTests: SwiftSyncTestCase {
 #if swift(>=5.5.2) && canImport(_Concurrency)
 @available(macOS 12.0.0, *)
 extension SwiftFlexibleSyncServerTests {
-    @MainActor private func populateFlexibleSyncData(_ block: @escaping (Realm) -> Void) async throws {
-        var config = (try await self.flexibleSyncApp.login(credentials: .anonymous)).flexibleSyncConfiguration()
-        if config.objectTypes == nil {
-            config.objectTypes = [SwiftPerson.self,
-                                  SwiftTypesSyncObject.self]
-        }
-        let realm = try await Realm(configuration: config)
-
-        let subscriptions = realm.subscriptions
-        try await subscriptions.write {
-            subscriptions.append(QuerySubscription<SwiftPerson> {
-                $0.age >= 0
-            })
-            subscriptions.append(QuerySubscription<SwiftTypesSyncObject> {
-                $0.boolCol == true
-            })
-        }
-
-        try realm.write {
-            block(realm)
-        }
-    }
-
-    @MainActor func testFlexibleSyncAppAddQueryAsyncAwait() async throws {
-        try await populateFlexibleSyncData { realm in
+    @MainActor
+    func testFlexibleSyncAppAddQueryAsyncAwait() async throws {
+        try populateFlexibleSyncData { realm in
             for i in 1...21 {
                 let person = SwiftPerson(firstName: "\(#function)",
                                          lastName: "lastname_\(i)",
@@ -1010,6 +988,7 @@ extension SwiftFlexibleSyncServerTests {
             })
         }
 
+        waitForDownloads(for: realm)
         checkCount(expected: 6, realm, SwiftPerson.self)
     }
 
