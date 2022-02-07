@@ -45,7 +45,7 @@ extension URLSession {
             result = $0
             group.leave()
         }
-        guard case .success = group.wait(timeout: .now() + 5) else {
+        guard case .success = group.wait(timeout: .now() + 10) else {
             return .failure(URLError(.cannotFindHost))
         }
         return result
