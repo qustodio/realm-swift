@@ -214,7 +214,9 @@ struct CallbackLogger : public realm::util::RootLogger {
     _authorizationHeaderName = nil;
     _customRequestHeaders = nil;
     _timeoutOptions = nil;
-    _syncManager->reset_for_testing();
+    if (_syncManager->has_existing_sessions()){
+        _syncManager->reset_for_testing();
+    }
 }
 
 - (std::shared_ptr<realm::SyncManager>)syncManager {
