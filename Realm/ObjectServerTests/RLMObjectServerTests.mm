@@ -1624,7 +1624,7 @@ static const NSInteger NUMBER_OF_BIG_OBJECTS = 2;
     CHECK_COUNT(NUMBER_OF_BIG_OBJECTS, HugeSyncObject, realm);
 }
 
-- (void)testDownloadCancelsOnAuthError {
+- (void)skip_testDownloadCancelsOnAuthError {
     RLMCredentials *credentials = [self basicCredentialsWithName:NSStringFromSelector(_cmd)
                                                         register:self.isParent];
     RLMUser *user = [self logInUserForCredentials:credentials];
