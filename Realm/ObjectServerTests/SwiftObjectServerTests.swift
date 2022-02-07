@@ -458,7 +458,7 @@ class SwiftObjectServerTests: SwiftSyncTestCase {
 
     // MARK: - Download Realm
 
-    func testDownloadRealm() {
+    func skip_testDownloadRealm() {
         do {
             let user = try logInUser(for: basicCredentials())
             if !isParent {
