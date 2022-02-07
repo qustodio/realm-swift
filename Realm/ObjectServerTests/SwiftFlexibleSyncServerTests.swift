@@ -46,7 +46,6 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
         assertThrows(realm.subscriptions)
     }
 
-    // FIXME: Using `assertThrows` within a Server test will crash on tear down
     func testGetSubscriptionsWhenPbsRealm() throws {
         let user = try logInUser(for: basicCredentials())
         let realm = try openRealm(partitionValue: #function, user: user)
@@ -200,7 +199,6 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
         XCTAssertEqual(subscriptions.count, 2)
     }
 
-    // FIXME: Using `assertThrows` within a Server test will crash on tear down
     func testSameNamedSubscriptionThrows() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
@@ -215,7 +213,6 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
         XCTAssertEqual(subscriptions.count, 1)
     }
 
-    // FIXME: Using `assertThrows` within a Server test will crash on tear down
     func testAddSubscriptionOutsideWriteThrows() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
@@ -547,7 +544,7 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
     }
 
     // FIXME: Using `assertThrows` within a Server test will crash on tear down
-    func testFlexibleSyncAppUpdateQueryWithDifferentObjectTypeWillThrow() throws {
+    func skip_testFlexibleSyncAppUpdateQueryWithDifferentObjectTypeWillThrow() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
         subscriptions.write {
