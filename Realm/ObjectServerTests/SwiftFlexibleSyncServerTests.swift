@@ -46,7 +46,8 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
         assertThrows(realm.subscriptions)
     }
 
-    func testGetSubscriptionsWhenPbsRealm() throws {
+    // FIXME: Using `assertThrows` within a Server test will crash on tear down
+    func skip_testGetSubscriptionsWhenPbsRealm() throws {
         let user = try logInUser(for: basicCredentials())
         let realm = try openRealm(partitionValue: #function, user: user)
         assertThrows(realm.subscriptions)
@@ -199,7 +200,8 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
         XCTAssertEqual(subscriptions.count, 2)
     }
 
-    func testSameNamedSubscriptionThrows() throws {
+    // FIXME: Using `assertThrows` within a Server test will crash on tear down
+    func skip_testSameNamedSubscriptionThrows() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
         subscriptions.write {
@@ -213,7 +215,8 @@ class SwiftFlexibleSyncTests: SwiftSyncTestCase {
         XCTAssertEqual(subscriptions.count, 1)
     }
 
-    func testAddSubscriptionOutsideWriteThrows() throws {
+    // FIXME: Using `assertThrows` within a Server test will crash on tear down
+    func skip_testAddSubscriptionOutsideWriteThrows() throws {
         let realm = try openFlexibleSyncRealm()
         let subscriptions = realm.subscriptions
         assertThrows(subscriptions.append(QuerySubscription<SwiftPerson>(name: "person_age_1") {
