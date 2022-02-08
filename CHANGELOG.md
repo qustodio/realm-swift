@@ -1,7 +1,6 @@
 x.y.z Release notes (yyyy-MM-dd)
 =============================================================
 ### Enhancements
-* Add Combine API support for flexible sync beta.
 * Add `Realm.writeCopy(configuration:)`/`[RLMRealm writeCopyForConfiguration:]` which gives the
   following functionality:
     - Export a local non-sync Realm to be used with MongoDB Realm Sync 
@@ -19,6 +18,7 @@ x.y.z Release notes (yyyy-MM-dd)
   will be opened instead. Note that to use this parameter with a synced Realm configuration
   the seed Realm must be appropriately copied to a destination with 
   `Realm.writeCopy(configuration:)`/`[RLMRealm writeCopyForConfiguration:]` first.
+* Add Combine API support for flexible sync beta.
 
 
 ### Fixed
